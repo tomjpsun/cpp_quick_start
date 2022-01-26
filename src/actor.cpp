@@ -9,6 +9,7 @@
 #include <mutex>
 #include <typeinfo>
 #include <vector>
+#include <iostream>
 
 using asio::any_io_executor;
 using asio::defer;
@@ -21,6 +22,8 @@ using asio::system_executor;
 // ~~~~~~~~~~~~~~~~~~~~~~
 
 class actor;
+static int g_actor_id = 0;
+static int g_handler_id = 0;
 
 // Used to identify the sender and recipient of messages.
 typedef actor* actor_address;
@@ -29,10 +32,13 @@ typedef actor* actor_address;
 class message_handler_base
 {
 public:
+	message_handler_base():handler_id(g_handler_id++)
+		{}
 	virtual ~message_handler_base() {}
 
 	// Used to determine which message handlers receive an incoming message.
 	virtual const std::type_info& message_id() const = 0;
+	int handler_id;
 };
 
 // Base class for a handler for a specific message type.
@@ -82,8 +88,10 @@ private:
 class actor
 {
 public:
+	int actor_id;
 	virtual ~actor()
 		{
+
 		}
 
 	// Obtain the actor's address for use as a message sender or recipient.
@@ -107,7 +115,7 @@ public:
 protected:
 	// Construct the actor to use the specified executor for all message handlers.
 	actor(any_io_executor e)
-		: executor_(std::move(e))
+		: executor_(std::move(e)), actor_id(g_actor_id++)
 		{
 		}
 
@@ -164,6 +172,9 @@ private:
 				{
 					auto mh = static_cast<message_handler<Message>*>(h.get());
 					mh->handle_message(msg, from);
+					std::cout << "actor:" << actor_id
+						  << ", handle_message ( " << msg << ","
+						  << from->actor_id << " )" << std::endl;
 				}
 			}
 		}
@@ -185,6 +196,7 @@ public:
 		: actor(system_executor())
 		{
 			register_handler(&receiver::message_handler);
+			actor_id += 10000;
 		}
 
 	// Block until a message has been received.
@@ -255,11 +267,12 @@ private:
 	actor_address caller_;
 };
 
-int main()
+int main(int argc, char** argv)
 {
-	const std::size_t num_threads = 16;
-	const int num_hops = 50000000;
-	const std::size_t num_actors = 503;
+	const std::size_t num_threads = 4;
+	const int num_hops = 7;
+	const std::size_t num_actors = 11;
+	std::cout << "threads=" << num_threads << ", actors=" << num_actors << std::endl;
 	const int token_value = (num_hops + num_actors - 1) / num_actors;
 	const std::size_t actors_per_thread = num_actors / num_threads;
 
