@@ -3,6 +3,7 @@
 #include <asio/post.hpp>
 #include <asio/strand.hpp>
 #include <asio/system_executor.hpp>
+#include <asio/io_context.hpp>
 #include <condition_variable>
 #include <deque>
 #include <memory>
@@ -10,6 +11,9 @@
 #include <typeinfo>
 #include <vector>
 #include <iostream>
+#include <atomic>
+#include <functional>
+#include <thread>
 
 using asio::any_io_executor;
 using asio::defer;
@@ -22,8 +26,10 @@ using asio::system_executor;
 // ~~~~~~~~~~~~~~~~~~~~~~
 
 class actor;
-static int g_actor_id = 0;
-static int g_handler_id = 0;
+std::atomic<int> g_actor_id{0};
+std::atomic<int> g_handler_id{0};
+
+asio::io_context::strand* g_strand;
 
 // Used to identify the sender and recipient of messages.
 typedef actor* actor_address;
@@ -172,9 +178,12 @@ private:
 				{
 					auto mh = static_cast<message_handler<Message>*>(h.get());
 					mh->handle_message(msg, from);
-					std::cout << "actor:" << actor_id
-						  << ", handle_message ( " << msg << ","
-						  << from->actor_id << " )" << std::endl;
+				        post( g_strand->context().get_executor(),[=]
+					      {
+						      std::cout << "actor:" << actor_id
+								<< ", handle_message ( " << msg << ","
+								<< from->actor_id << " )" << std::endl;
+					      });
 				}
 			}
 		}
@@ -196,7 +205,7 @@ public:
 		: actor(system_executor())
 		{
 			register_handler(&receiver::message_handler);
-			actor_id += 10000;
+			actor_id += 0xff0000;
 		}
 
 	// Block until a message has been received.
@@ -225,7 +234,9 @@ private:
 
 //------------------------------------------------------------------------------
 
+#include <asio/io_context.hpp>
 #include <asio/thread_pool.hpp>
+#include <asio/thread.hpp>
 #include <iostream>
 
 using asio::thread_pool;
@@ -281,7 +292,10 @@ int main(int argc, char** argv)
 	std::vector<std::shared_ptr<member>> members(num_actors);
 	receiver<int> rcvr;
 
-	// Create the member actors.
+	asio::io_context tio_context;
+	asio::io_context::strand s(tio_context);
+	g_strand = &s;
+        // Create the member actors.
 	for (std::size_t i = 0; i < num_actors; ++i)
 		members[i] = std::make_shared<member>(pools[(i / actors_per_thread) % num_threads].get_executor());
 
@@ -296,4 +310,8 @@ int main(int argc, char** argv)
 	// Wait for all signal messages, indicating the tokens have all reached zero.
 	for (std::size_t i = 0; i < num_actors; ++i)
 		rcvr.wait();
+
+	// Wait until strand finishing all jobs on the thread io context
+	tio_context.run();
+
 }
