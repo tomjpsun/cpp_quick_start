@@ -14,7 +14,7 @@
 #include <atomic>
 #include <functional>
 #include <thread>
-
+#include <sstream>
 using asio::any_io_executor;
 using asio::defer;
 using asio::post;
@@ -30,6 +30,20 @@ std::atomic<int> g_actor_id{0};
 std::atomic<int> g_handler_id{0};
 
 asio::io_context::strand* g_strand;
+inline void debug_print(std::string& s)
+{
+	if (g_strand != nullptr) {
+		post( g_strand->context().get_executor(),[=]
+		      {
+			      std::cout << s << std::endl;
+		      });
+	}
+}
+inline void debug_print(std::stringstream& ss)
+{
+	std::string s(ss.str());
+	debug_print(s);
+}
 
 // Used to identify the sender and recipient of messages.
 typedef actor* actor_address;
@@ -178,12 +192,11 @@ private:
 				{
 					auto mh = static_cast<message_handler<Message>*>(h.get());
 					mh->handle_message(msg, from);
-				        post( g_strand->context().get_executor(),[=]
-					      {
-						      std::cout << "actor:" << actor_id
-								<< ", handle_message ( " << msg << ","
-								<< from->actor_id << " )" << std::endl;
-					      });
+					std::stringstream ss;
+					ss << "actor:" << actor_id
+					   << ", handle_message ( " << msg << ","
+					   << from->actor_id << " )";
+					debug_print(ss);
 				}
 			}
 		}
@@ -283,7 +296,15 @@ int main(int argc, char** argv)
 	const std::size_t num_threads = 4;
 	const int num_hops = 7;
 	const std::size_t num_actors = 11;
-	std::cout << "threads=" << num_threads << ", actors=" << num_actors << std::endl;
+
+        asio::io_context tio_context;
+	asio::io_context::strand s(tio_context);
+	g_strand = &s;
+
+        std::stringstream ss;
+        ss << "threads=" << num_threads << ", actors=" << num_actors;
+	debug_print(ss);
+
 	const int token_value = (num_hops + num_actors - 1) / num_actors;
 	const std::size_t actors_per_thread = num_actors / num_threads;
 
@@ -292,9 +313,6 @@ int main(int argc, char** argv)
 	std::vector<std::shared_ptr<member>> members(num_actors);
 	receiver<int> rcvr;
 
-	asio::io_context tio_context;
-	asio::io_context::strand s(tio_context);
-	g_strand = &s;
         // Create the member actors.
 	for (std::size_t i = 0; i < num_actors; ++i)
 		members[i] = std::make_shared<member>(pools[(i / actors_per_thread) % num_threads].get_executor());
