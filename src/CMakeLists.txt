@@ -12,9 +12,6 @@ find_package(CURL 7.74.0 REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 target_link_libraries(cpp_quick_start ${CURL_LIBRARIES} )
 
-find_package(nlohmann_json REQUIRED)
-target_link_libraries(cpp_quick_start nlohmann_json::nlohmann_json)
-
 add_compile_options(--std=c++17)
 target_link_libraries(cpp_quick_start -lpthread)
 
@@ -24,6 +21,7 @@ include(${cpp_quick_start_SOURCE_DIR}/cmake/CPM.cmake)
 
 find_package(Threads REQUIRED)
 CPMAddPackage("gh:chriskohlhoff/asio#asio-1-21-0@1.21.0")
+CPMAddPackage("gh:nlohmann/json@3.10.5")
 
 if(asio_ADDED)
   add_library(asio INTERFACE)
@@ -66,3 +64,4 @@ if(asio_ADDED)
 endif()
 
 target_link_libraries(cpp_quick_start asio)
+target_link_libraries(cpp_quick_start nlohmann_json::nlohmann_json)
