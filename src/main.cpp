@@ -16,6 +16,8 @@
 #include "asio.hpp"
 #include <atomic>
 #include "parse.hpp"
+#include <ncurses.h>
+
 using asio::ip::udp;
 
 int main(int argc, char* argv[])
@@ -26,11 +28,22 @@ int main(int argc, char* argv[])
 	int port = 65535;
 	const int max_length = 1024;
 	double timeout_sec = 1.8;
+	int height = 20;
+	int width = 60;
+	int startX = 10;
+	int startY = 10;
 	std::atomic<bool> continue_polling_readers{ true };
 	char data[] = {'X'};
 
-	socket.open(asio::ip::udp::v4(), error);
-	if (!error)
+        // ncurses
+	initscr();
+	refresh();
+	WINDOW* win = newwin(height, width, startX, startY);
+	wrefresh(win);
+
+        socket.open(asio::ip::udp::v4(), error);
+
+        if (!error)
 	{
 		// broadcast for reader info
 		socket.set_option(asio::ip::udp::socket::reuse_address(true));
@@ -81,6 +94,9 @@ int main(int argc, char* argv[])
 			}
 
 		}
-		socket.close(error);
 	}
+
+        socket.close(error);
+	getch();
+	endwin();
 }

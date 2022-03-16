@@ -12,8 +12,14 @@ find_package(CURL 7.74.0 REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
 target_link_libraries(rfid_discovery ${CURL_LIBRARIES} )
 
+
+find_package(Curses REQUIRED)
+include_directories(${CURSES_INCLUDE_DIR})
+target_link_libraries(rfid_discovery ${CURSES_LIBRARIES})
+
+
 add_compile_options(--std=c++17)
-target_link_libraries(rfid_discovery -lpthread)
+#target_link_libraries(rfid_discovery -lpthread)
 
 add_compile_definitions("PROJECT_DIR=\"${PROJECT_SOURCE_DIR}\"")
 
