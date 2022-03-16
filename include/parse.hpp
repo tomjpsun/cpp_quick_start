@@ -7,7 +7,8 @@ using namespace std;
 class parse_echo
 {
 public:
-	parse_echo(string response);
+	parse_echo(string ip, string response);
+	string ip_addr_;
 	string mac_addr_;
 	string port_;
 	string misc_;

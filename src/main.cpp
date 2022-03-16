@@ -15,7 +15,7 @@
 #include <iostream>
 #include "asio.hpp"
 #include <atomic>
-
+#include "parse.hpp"
 using asio::ip::udp;
 
 int main(int argc, char* argv[])
@@ -68,8 +68,10 @@ int main(int argc, char* argv[])
 					size_t reply_length = socket.receive_from(
 						asio::buffer(reply, bytes_readable), sender_endpoint);
 					asio::ip::address sender_address = sender_endpoint.address();
-					std::cout << "(" << sender_address.to_string() << ") "
+					string ip_addr = sender_address.to_string();
+					std::cout << "(" << ip_addr << ") "
 						  << reply << std::endl;
+					parse_echo p{ip_addr, reply};
 				}
 			} catch (asio::error_code& ec) {
 				// should not happen
