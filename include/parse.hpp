@@ -4,10 +4,10 @@
 
 using namespace std;
 
-class parse_echo
+class ParseEcho
 {
 public:
-	parse_echo(string ip, string response);
+	ParseEcho(string ip, string response);
 	string ip_addr_;
 	string mac_addr_;
 	string port_;

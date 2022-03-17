@@ -4,7 +4,7 @@
 
 using namespace std;
 
-parse_echo::parse_echo(string ip_addr, string response)
+ParseEcho::ParseEcho(string ip_addr, string response)
 {
 	// example response :
         // A0.36.119.86.79.213/000001001/N**M*/**///4

@@ -6,7 +6,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 link_directories(/usr/local/lib/)
 
-add_executable(rfid_discovery main.cpp parse.cpp)
+add_executable(rfid_discovery main.cpp parse.cpp reader_query.cpp)
 
 find_package(CURL 7.74.0 REQUIRED)
 include_directories(${CURL_INCLUDE_DIR})
