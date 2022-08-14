@@ -1,4 +1,4 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(rfid_discovery)
+project(bank_account)
 add_subdirectory(src)

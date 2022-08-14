@@ -1,4 +1,4 @@
-include_directories(${rfid_discovery_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(/usr/local/include)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -6,18 +6,14 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 link_directories(/usr/local/lib/)
 
-add_executable(rfid_discovery blocking_udp_echo_client.cpp)
-
-find_package(CURL 7.74.0 REQUIRED)
-include_directories(${CURL_INCLUDE_DIR})
-target_link_libraries(rfid_discovery ${CURL_LIBRARIES} )
+add_executable(${PROJECT_NAME} bank_account.cpp)
 
 add_compile_options(--std=c++17)
-target_link_libraries(rfid_discovery -lpthread)
+target_link_libraries(${PROJECT_NAME} -lpthread)
 
 add_compile_definitions("PROJECT_DIR=\"${PROJECT_SOURCE_DIR}\"")
 
-include(${rfid_discovery_SOURCE_DIR}/cmake/CPM.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
 
 find_package(Threads REQUIRED)
 CPMAddPackage("gh:chriskohlhoff/asio#asio-1-21-0@1.21.0")
@@ -63,5 +59,5 @@ if(asio_ADDED)
 
 endif()
 
-target_link_libraries(rfid_discovery asio)
-target_link_libraries(rfid_discovery nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} asio)
+target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
