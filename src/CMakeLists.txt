@@ -9,7 +9,6 @@ link_directories(/usr/local/lib/)
 add_executable(${PROJECT_NAME} bank_account.cpp)
 
 add_compile_options(--std=c++17)
-target_link_libraries(${PROJECT_NAME} -lpthread)
 
 add_compile_definitions("PROJECT_DIR=\"${PROJECT_SOURCE_DIR}\"")
 
@@ -17,7 +16,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
 
 find_package(Threads REQUIRED)
 CPMAddPackage("gh:chriskohlhoff/asio#asio-1-21-0@1.21.0")
-CPMAddPackage("gh:nlohmann/json@3.10.5")
+
 
 if(asio_ADDED)
   add_library(asio INTERFACE)
@@ -60,4 +59,6 @@ if(asio_ADDED)
 endif()
 
 target_link_libraries(${PROJECT_NAME} asio)
-target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
+# unmark the following if you want to use nlohmann/json
+# CPMAddPackage("gh:nlohmann/json@3.10.5")
+# target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json)
