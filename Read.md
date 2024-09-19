@@ -2,7 +2,7 @@ This project is intended to be a _quick_ starting template for
 C++ projects which wants to be _self sufficient_--- i.e.,
 with _less_ dependency on requirements of the development system.
 
-Based on [CPM](https://github.com/TsinghuaAI/CPM), the project can download
+Based on [CPM](https://github.com/cpm-cmake/CPM.cmake?tab=readme-ov-file), the project can download
  the 3rd party library sources on first build, and cached them for later build.
 
 The user only has to modify the src/CMakefile for project name,
